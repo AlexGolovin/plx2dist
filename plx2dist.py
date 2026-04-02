@@ -39,7 +39,6 @@ Usage (Python API)
 Reference
 ---------
 If you use this code, please cite:
-    Golovin et al. (2023), A&A 670, A19  [CNS5]
     Golovin et al. (in prep.)             [CNS6]
 """
 
