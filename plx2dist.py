@@ -135,7 +135,7 @@ def _normalize_posterior(r: np.ndarray, log_post: np.ndarray) -> Tuple[np.ndarra
     shifted = np.full_like(log_post, -np.inf, dtype=float)
     shifted[finite] = log_post[finite] - np.max(log_post[finite])
     unnorm = np.exp(shifted)
-    norm = np.trapz(unnorm, r)
+    norm = np.trapezoid(unnorm, r)
     if not np.isfinite(norm) or norm <= 0:
         raise RuntimeError("Posterior normalization failed.")
 
