@@ -45,4 +45,5 @@ Repository = "https://github.com/AlexGolovin/plx2dist"
 "Bug Tracker" = "https://github.com/AlexGolovin/plx2dist/issues"
 
 [tool.setuptools]
-py-modules = ["plx2dist"]
+package-dir = {"" = "src"}
+packages = ["plx2dist"]
