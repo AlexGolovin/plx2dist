@@ -9,27 +9,27 @@ description = "Bayesian parallax-to-distance pipeline for stellar catalogues"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Alex Golovin", email = "agolovin@lsw.uni-heidelberg.de" },
+  { name = "Alex Golovin", email = "agolovin@lsw.uni-heidelberg.de" },
 ]
 keywords = ["astronomy", "astrometry", "parallax", "distance", "Gaia", "Bayesian"]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Astronomy",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Astronomy",
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "numpy>=1.23",
-    "scipy>=1.9",
-    "pandas>=1.5",
-    "matplotlib>=3.6",
-    "astropy>=5.2",
+  "numpy>=1.23",
+  "scipy>=1.9",
+  "pandas>=1.5",
+  "matplotlib>=3.6",
+  "astropy>=5.2",
 ]
 
 [project.optional-dependencies]
@@ -44,10 +44,5 @@ Homepage = "https://github.com/AlexGolovin/plx2dist"
 Repository = "https://github.com/AlexGolovin/plx2dist"
 "Bug Tracker" = "https://github.com/AlexGolovin/plx2dist/issues"
 
-[tool.setuptools.py-modules]
-# single-module package — tells setuptools to package plx2dist.py directly
-```
-
-The `[project.scripts]` entry means after `pip install plx2dist`, users can run `plx2dist --input cat.vot --output-prefix results` directly from the terminal. The `progress` optional group means `pip install plx2dist[progress]` installs tqdm automatically.
-
----
+[tool.setuptools]
+py-modules = ["plx2dist"]
