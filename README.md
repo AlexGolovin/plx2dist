@@ -82,11 +82,11 @@ BibTeX for CNS6:
 ```bibtex
 @article{Golovin2026,
   author  = {Golovin, A. et al.},
-  title   = {{The Sixth Catalogue of Nearby Stars (CNS5)}},
+  title   = {{The Sixth Catalogue of Nearby Stars (CNS6)}},
   journal = {A\&A},
-  year    = {2023},
-  volume  = {670},
-  pages   = {A19},
-  doi     = {10.1051/0004-6361/202244250}
+  year    = {2026},
+  volume  = {NNN},
+  pages   = {ANN},
+  doi     = {TBD}
 }
 ```
