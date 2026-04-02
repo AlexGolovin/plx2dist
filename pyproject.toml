@@ -40,9 +40,9 @@ dev = ["pytest>=7", "tqdm>=4.64"]
 plx2dist = "plx2dist:main"
 
 [project.urls]
-Homepage = "https://github.com/YOUR_USERNAME/plx2dist"
-Repository = "https://github.com/YOUR_USERNAME/plx2dist"
-"Bug Tracker" = "https://github.com/YOUR_USERNAME/plx2dist/issues"
+Homepage = "https://github.com/AlexGolovin/plx2dist"
+Repository = "https://github.com/AlexGolovin/plx2dist"
+"Bug Tracker" = "https://github.com/AlexGolovin/plx2dist/issues"
 
 [tool.setuptools.py-modules]
 # single-module package — tells setuptools to package plx2dist.py directly
