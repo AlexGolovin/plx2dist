@@ -1,0 +1,21 @@
+[project]
+name = "plx2dist"
+version = "0.0.0"
+description = "PLX → distance conversion tooling"
+readme = "README.md"
+authors = [{ name = "Alex Golovin" }]
+requires-python = ">=3.10"
+dependencies = [
+  "astropy",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "ruff",
+  "mypy",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
