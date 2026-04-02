@@ -2,16 +2,16 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata below."
 title: "plx2dist: Bayesian parallax-to-distance pipeline"
 version: "0.1.0"
-date-released: "2025-01-01"      # update to actual release date
+date-released: "2026-03-30"
 license: MIT
-repository-code: "https://github.com/YOUR_USERNAME/plx2dist"
+repository-code: "https://github.com/AlexGolovin/plx2dist"
 doi: "10.5281/zenodo.XXXXXXX"   # fill in after Zenodo registration
 
 authors:
   - family-names: Golovin
     given-names: Alex
     orcid: "https://orcid.org/0000-0000-0000-0000"   # replace with your ORCID
-    affiliation: "YOUR INSTITUTION"
+    affiliation: LSW, Heidelberg University
 
 abstract: >
   plx2dist computes Bayesian geometric distances from trigonometric parallax
