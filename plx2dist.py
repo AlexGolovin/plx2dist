@@ -42,7 +42,6 @@ If you use this code, please cite:
     Golovin et al. (in prep.)             [CNS6]
 """
 
-from __future__ import annotations
 
 import argparse
 import concurrent.futures as cf
