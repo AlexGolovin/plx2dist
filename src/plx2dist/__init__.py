@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
-from .conversion import summarize_distance_posterior
+from .conversion import parallax_to_distance, summarize_distance_posterior
 
-
-__all__ = ["__version__", "summarize_distance_posterior"]
 __version__ = "0.1.0"
+
+__all__ = ["__version__", "parallax_to_distance", "summarize_distance_posterior"]
 
 
 def _load_legacy_module():
