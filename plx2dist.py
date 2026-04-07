@@ -267,7 +267,7 @@ def summarize_distance_posterior(
     threshold_label = _threshold_label(threshold_pc)
     p_within = _p_less_than(r_refined, cdf, threshold_pc)
 
-        return {
+    return {
         "mode": mode,
         "q05": q05,
         "q16": q16,
