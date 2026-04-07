@@ -268,7 +268,7 @@ def summarize_distance_posterior(
     threshold_label = _threshold_label(threshold_pc)
     p_within = _p_less_than(r_refined, cdf, threshold_pc)
 
-    return {
+        return {
         "mode": mode,
         "q05": q05,
         "q16": q16,
@@ -278,6 +278,8 @@ def summarize_distance_posterior(
         "err_lo": q50 - q16,
         "err_hi": q84 - q50,
         f"p_within_{threshold_label}": p_within,
+        "p_within_threshold_pc": p_within,
+        "threshold_pc": threshold_pc,
         "r_grid_min_used": float(r_refined[0]),
         "r_grid_max_used": float(r_refined[-1]),
     }
@@ -325,6 +327,7 @@ def _process_star_chunk(args: Tuple) -> Dict:
             "err_lo": np.full(n_stars, np.nan),
             "err_hi": np.full(n_stars, np.nan),
             f"p_within_{threshold_label}": np.full(n_stars, np.nan),
+            "p_within_threshold_pc": np.full(n_stars, np.nan),
             "r_grid_min_used": np.full(n_stars, np.nan),
             "r_grid_max_used": np.full(n_stars, np.nan),
         }
@@ -438,7 +441,7 @@ def derive_distances(
     id_col: str = "cns5_id",
     plx_col: str = "parallax",
     err_col: str = "parallax_error",
-    priors: List[str] = ["edsd"],
+    priors: Optional[List[str]] = None,
     L: float = 250.0,
     r_max: float = 20000.0,
     threshold_pc: float = 25.0,
@@ -459,7 +462,46 @@ def derive_distances(
     star_ids = np.asarray(out[id_col]) if id_col in cols else np.arange(n_total)
     parallaxes = np.asarray(out[plx_col])
     parallax_errs = np.asarray(out[err_col])
+    if priors is None:
+        priors = ["edsd"]
     threshold_label = _threshold_label(threshold_pc)
+
+    metrics = [
+        "mode", "q05", "q16", "q50", "q84", "q95",
+        "err_lo", "err_hi",
+        "p_within_threshold_pc",          # stable, always present
+        f"p_within_{threshold_label}",    # label-specific, for pipeline/plots
+        "r_grid_min_used", "r_grid_max_used",
+    ]
+
+    # precreate columns so schema is deterministic (even for empty catalogs)
+    for prior in priors:
+        prefix = f"distance_{prior}"
+        for metric in metrics:
+            col_name = f"{prefix}_{metric}"
+            if col_name not in cols:
+                out[col_name] = np.nan
+                if is_astropy:
+                    cols = out.colnames
+
+            prior_L_col = f"{prefix}_prior_L_pc"
+            if prior_L_col not in cols:
+                out[prior_L_col] = np.nan
+                if is_astropy:
+                    cols = out.colnames
+    
+    if n_total == 0:
+        if output_prefix is not None:
+            csv_out = f"{output_prefix}.csv"
+            vot_out = f"{output_prefix}.vot"
+            if is_astropy:
+                out.to_pandas().to_csv(csv_out, index=False)
+                out.write(vot_out, format="votable", overwrite=True)
+            else:
+                out.to_csv(csv_out, index=False)
+                if Table is not None:
+                    Table.from_pandas(out).write(vot_out, format="votable", overwrite=True)
+        return out
 
     if plot_diagnostics:
         os.makedirs("distance_plots", exist_ok=True)
@@ -495,7 +537,8 @@ def derive_distances(
         else None
     )
 
-    with cf.ProcessPoolExecutor(max_workers=n_jobs) as executor:
+    Executor = cf.ProcessPoolExecutor if n_jobs > 1 else cf.ThreadPoolExecutor
+    with Executor(max_workers=n_jobs) as executor:
         futures = {executor.submit(_process_star_chunk, args): args for args in worker_args}
         for future in cf.as_completed(futures):
             res = future.result()

@@ -123,12 +123,10 @@ class TestNegativeParallax:
 # ---------------------------------------------------------------------------
 
 class TestZeroParallax:
-    def test_raises_value_error(self):
-        # Zero parallax with positive error is a valid measurement of zero,
-        # but the function should raise ValueError (invalid input guard).
-        # Adjust this test if you decide to handle zero parallax gracefully.
-        with pytest.raises(ValueError):
-            _run(w_obs=0.0, w_err=0.5)
+    def test_prior_dominated(self):
+        r = _run(w_obs=0.0, w_err=0.5)
+        assert math.isfinite(r["q50"]) and r["q50"] > 0.0
+        assert r["p_within_threshold_pc"] < 1e-3
 
 
 # ---------------------------------------------------------------------------

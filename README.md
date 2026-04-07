@@ -21,8 +21,9 @@ import pandas as pd
 from plx2dist import derive_distances
 
 df = pd.read_csv("my_catalogue.csv")   # must contain 'parallax', 'parallax_error'
-result = derive_distances(df)
-print(result[["parallax", "distance_edsd_q50", "distance_edsd_err_lo", "distance_edsd_err_hi"]])
+
+if __name__ == "__main__":
+    result_df = derive_distances(df, plx_col="parallax", err_col="parallax_error", n_jobs=4)
 ```
 
 ## Quick start (command line)
@@ -47,7 +48,7 @@ For each prior (e.g. `edsd`), the following columns are added:
 | `distance_edsd_q95` | 95th percentile (pc) |
 | `distance_edsd_err_lo` | q50 − q16 (pc) |
 | `distance_edsd_err_hi` | q84 − q50 (pc) |
-| `distance_edsd_p_within_25.0pc` | P(r < 25 pc \| ϖ, σ) — membership probability |
+| `distance_edsd_p_within_25pc` | P(r < 25 pc \| ϖ, σ) — membership probability; threshold can be specified by user |
 | `distance_edsd_r_grid_min_used` | Diagnostic: refined grid lower bound (pc) |
 | `distance_edsd_r_grid_max_used` | Diagnostic: refined grid upper bound (pc) |
 | `distance_edsd_prior_L_pc` | EDSD scale length used (pc) |
