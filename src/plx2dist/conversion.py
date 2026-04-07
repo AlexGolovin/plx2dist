@@ -14,6 +14,30 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
+
+import pandas as pd
+
+try:
+    from astropy.table import Table
+except ImportError:
+    Table = None
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+# Optional progress bar — works without tqdm installed
+try:
+    from tqdm import tqdm as _tqdm
+    _TQDM_AVAILABLE = True
+except ImportError:
+    _TQDM_AVAILABLE = False
+
+
 def parallax_to_distance(parallax: Quantity) -> Quantity:
     """Convert parallax to distance.
 
