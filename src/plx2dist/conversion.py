@@ -24,6 +24,131 @@ def parallax_to_distance(parallax: Quantity) -> Quantity:
     parallax_arcsec = parallax.to(u.arcsecond)
     return (1.0 / parallax_arcsec.value) * u.parsec
 
+# -----------------------------------------------------------------------------
+# 1. MATHEMATICAL MODEL
+# -----------------------------------------------------------------------------
+
+def log_prior(r: np.ndarray, prior_type: str = "edsd", L: float = 250.0, r_max: float = 20000.0) -> np.ndarray:
+    r = np.asarray(r, dtype=float)
+    lp = np.full_like(r, -np.inf, dtype=float)
+    valid = (r > 0.0) & (r < r_max)
+    if not np.any(valid):
+        return lp
+
+    rv = r[valid]
+    if prior_type == "edsd":
+        # p(r|L) = (1 / 2L^3) r^2 exp(-r/L), r > 0
+        lp[valid] = 2.0 * np.log(rv) - (rv / L) - np.log(2.0) - 3.0 * np.log(L)
+    elif prior_type == "volume":
+        # Truncated constant space-density prior on (0, r_max)
+        lp[valid] = 2.0 * np.log(rv) + np.log(3.0) - 3.0 * np.log(r_max)
+    else:
+        raise ValueError(f"Unknown prior: {prior_type}")
+    return lp
+
+
+def log_likelihood(r: np.ndarray, w_obs: float, w_err: float) -> np.ndarray:
+    # Gaussian likelihood in parallax space, parallax in mas, distance in pc.
+    w_true = 1000.0 / np.asarray(r, dtype=float)
+    return -0.5 * ((w_obs - w_true) / w_err) ** 2 - np.log(w_err) - 0.5 * np.log(2.0 * np.pi)
+
+
+def log_posterior_grid(r: np.ndarray, w_obs: float, w_err: float, prior_type: str, L: float, r_max: float) -> np.ndarray:
+    return log_prior(r, prior_type=prior_type, L=L, r_max=r_max) + log_likelihood(r, w_obs, w_err)
+
+
+# -----------------------------------------------------------------------------
+# 2. GRID HELPERS
+# -----------------------------------------------------------------------------
+
+def _initial_r_upper(w_obs: float, w_err: float, L: float, user_r_max: float) -> float:
+    scales = [user_r_max, 10.0 * L, 100.0]
+    if np.isfinite(w_err) and w_err > 0:
+        scales.append(20.0 * (1000.0 / w_err))
+    if np.isfinite(w_obs) and w_obs > 0:
+        scales.append(10.0 * (1000.0 / w_obs))
+    return max(scales)
+
+
+def _make_log_grid(r_min: float, r_max: float, grid_size: int) -> np.ndarray:
+    return np.geomspace(float(r_min), float(r_max), int(grid_size))
+
+
+def _normalize_posterior(r: np.ndarray, log_post: np.ndarray) -> Tuple[np.ndarray, np.ndarray, float]:
+    finite = np.isfinite(log_post)
+    if not np.any(finite):
+        raise RuntimeError("Posterior is non-finite everywhere.")
+
+    shifted = np.full_like(log_post, -np.inf, dtype=float)
+    shifted[finite] = log_post[finite] - np.max(log_post[finite])
+    unnorm = np.exp(shifted)
+    norm = np.trapezoid(unnorm, r)
+    if not np.isfinite(norm) or norm <= 0:
+        raise RuntimeError("Posterior normalization failed.")
+
+    pdf = unnorm / norm
+    cdf = np.zeros_like(pdf)
+    cdf[1:] = cumulative_trapezoid(pdf, r)
+    cdf /= cdf[-1]
+    return pdf, cdf, norm
+
+
+def _interp_quantile(r: np.ndarray, cdf: np.ndarray, q: float) -> float:
+    return float(np.interp(float(np.clip(q, 0.0, 1.0)), cdf, r))
+
+
+def _p_less_than(r: np.ndarray, cdf: np.ndarray, threshold_pc: float) -> float:
+    if threshold_pc <= r[0]:
+        return 0.0
+    if threshold_pc >= r[-1]:
+        return 1.0
+    return float(np.interp(threshold_pc, r, cdf))
+
+
+def _boundary_is_problematic(pdf: np.ndarray, cdf: np.ndarray) -> bool:
+    peak = float(np.nanmax(pdf))
+    tail_density_ratio = (pdf[-1] / peak) if peak > 0 else np.inf
+    tail_mass_last_decade = 1.0 - cdf[int(0.9 * len(cdf))]
+    return (tail_density_ratio > 1e-5) or (tail_mass_last_decade > 1e-4)
+
+
+def _refine_bounds_from_cdf(r: np.ndarray, cdf: np.ndarray) -> Tuple[float, float]:
+    """Choose narrower bounds that safely contain essentially all posterior mass.
+
+    We start from extreme quantiles and then pad multiplicatively. This is much
+    more accurate for narrow high-S/N posteriors than reusing one giant global
+    grid, while still keeping low-S/N tails if they are genuinely present.
+    """
+    q_lo = _interp_quantile(r, cdf, 1e-6)
+    q_hi = _interp_quantile(r, cdf, 1.0 - 1e-6)
+
+    # multiplicative padding on log scale
+    r_lo = max(r[0], q_lo / 2.5)
+    r_hi = min(r[-1], q_hi * 2.5)
+
+    # numerical safeguard in case the posterior is extremely narrow
+    if not np.isfinite(r_lo) or not np.isfinite(r_hi) or r_lo <= 0 or r_hi <= r_lo:
+        r_mode = r[np.argmax(np.diff(np.r_[0.0, cdf]))]
+        r_lo = max(r[0], r_mode / 10.0)
+        r_hi = min(r[-1], r_mode * 10.0)
+
+    # Prevent over-collapse for moderate/poor data.
+    min_span_dex = 0.5  # at least factor ~3.16 in total span
+    current_span_dex = np.log10(r_hi) - np.log10(r_lo)
+    if current_span_dex < min_span_dex:
+        mid = np.sqrt(r_lo * r_hi)
+        half = min_span_dex / 2.0
+        r_lo = max(r[0], mid / (10.0 ** half))
+        r_hi = min(r[-1], mid * (10.0 ** half))
+
+    return float(r_lo), float(r_hi)
+
+def _threshold_label(threshold_pc: float) -> str:
+    if float(threshold_pc).is_integer():
+        return f"{int(threshold_pc)}pc"
+    return f"{threshold_pc:g}pc"
+
+
 def summarize_distance_posterior(
     w_obs: float,
     w_err: float,
