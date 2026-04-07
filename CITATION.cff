@@ -5,12 +5,12 @@ version: "0.1.0"
 date-released: "2026-03-30"
 license: MIT
 repository-code: "https://github.com/AlexGolovin/plx2dist"
-doi: "10.5281/zenodo.XXXXXXX"   # fill in after Zenodo registration
+doi: "10.5281/zenodo.XXXXXXX"   # I will fill this in after Zenodo registration
 
 authors:
   - family-names: Golovin
     given-names: Alex
-    orcid: "https://orcid.org/0000-0000-0000-0000"   # replace with your ORCID
+    orcid: "https://orcid.org/0000-0002-5469-9676"
     affiliation: LSW, Heidelberg University
 
 abstract: >
@@ -31,12 +31,12 @@ keywords:
 
 references:
   - type: article
-    title: "The Catalogue of Nearby Stars. Fifth Edition (CNS5)"
+    title: "The Sixth Catalogue of Nearby Stars (CNS6)"
     authors:
       - family-names: Golovin
         given-names: Alex
     journal: "Astronomy & Astrophysics"
-    volume: 670
-    pages: A19
-    year: 2023
-    doi: "10.1051/0004-6361/202244250"
+    volume: TBD
+    pages: ATBD
+    year: 2026
+    doi: "TBD"
