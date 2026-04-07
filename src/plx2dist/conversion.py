@@ -3,7 +3,7 @@ from astropy import units as u
 from astropy.units import Quantity
 
 from scipy.integrate import cumulative_trapezoid
-from __future__ import annotations
+# from __future__ import annotations
 
 import argparse
 import concurrent.futures as cf
