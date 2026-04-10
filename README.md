@@ -11,8 +11,7 @@ uniform volume density). It was developed for CNS6 (The Sixth Catalogue of Nearb
 
 ## Installation
 ```bash
-pip install plx2dist               # core
-pip install plx2dist[progress]     # + tqdm progress bar
+pip install plx2dist
 ```
 
 ## Quick start (Python API)
@@ -57,10 +56,11 @@ Use `q50` as the point estimate and `err_lo`/`err_hi` as the asymmetric uncertai
 `mode` tends to be slightly closer to the likelihood peak; prefer `q50` for catalogue work.
 
 ## Method
+A fine grid from 0.1 to 10 kpc turned out to be too slow and missed low-S/N posteriors near the boundary. 
 
-The pipeline uses a two-stage adaptive log-r grid:
-1. A broad safety pass locates posterior support, with automatic boundary expansion for low-S/N stars.
-2. A refined pass concentrates grid points around the posterior mass for accurate quantile estimation.
+The pipeline ended up doing two passes - adaptive log-r grid:
+1. a coarse safety pass to locate where the posterior actually lives.
+2. then a refined pass around that region for accurate quantile estimation.
 
 No MCMC. Fully deterministic and parallelised via Python `multiprocessing`.
 
